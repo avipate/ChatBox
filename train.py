@@ -3,8 +3,9 @@ import json
 import numpy as np
 from nltk_utils import tokenize, stem, bag_of_words
 import torch
-import torch.nn
+import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
+from model import NeuraNet
 
 # Open the json file
 with open('intents.json', 'r') as f:
@@ -49,6 +50,14 @@ for (pattern_sentence, tag) in xy:
 x_train = np.array(x_train)
 x_train = np.array(x_train)
 
+# creating hyperparameter
+batch_size = 8
+input_size = len(x_train[0])
+hidden_size = 8
+output_size = len(tags)
+learning_rate = 0.001
+num_epochs = 1000
+
 
 # creating new dataset
 class Chatdataset(Dataset):
@@ -67,10 +76,39 @@ class Chatdataset(Dataset):
         return self.n_samples
 
 
-# creating hyperparameter
-batch_size = 8
-
 # Creating dataset variable
 dataset = Chatdataset()
-train_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True, num_workers=2)
+train_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True, num_workers=0)
 
+# device config
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+# creating the model variable
+model = NeuraNet(input_size=input_size, hidden_size=hidden_size, num_classes=output_size).to(device)
+
+# loss and optimizer
+criterion = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+
+# training loop
+for epoch in range(num_epochs):
+    for (words, labels) in train_loader:
+        words = words.to(device)
+        labels = labels.to(dtype=torch.long).to(device)
+
+        # forward
+        outputs = model(words)
+        loss = criterion(outputs, labels)
+
+        # backward and optimizer step
+        optimizer.zero_grad()  # empty the gradients
+        loss.backward()  # calculate backpropagation
+        optimizer.step()
+
+    # done with training loop
+    # epochs and loss
+    if (epoch+1) % 100 == 0:
+        print(f'Epoch {epoch+1}/{num_epochs}, loss = {loss.item()}')
+
+# final loss
+print(f'Final Loss: {loss.item()}')
