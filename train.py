@@ -52,14 +52,17 @@ x_train = np.array(x_train)
 
 # creating new dataset
 class Chatdataset(Dataset):
+    # x and y data
     def __init__(self):
         self.n_samples = len(x_train)
         self.x_data = x_train
         self.y_data = y_train
 
+    # dataset index
     def __getitem__(self, index):
         return self.x_data[index], self.y_data[index]
 
+    # length of x data
     def __len__(self):
         return self.n_samples
 
@@ -67,6 +70,7 @@ class Chatdataset(Dataset):
 # creating hyperparameter
 batch_size = 8
 
-# Creating chatdataset variable
+# Creating dataset variable
 dataset = Chatdataset()
 train_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True, num_workers=2)
+
