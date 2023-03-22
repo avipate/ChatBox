@@ -32,16 +32,12 @@ model.eval()  # evaluate the model
 
 # Creating the chat
 bot_name = "Jarvis"
-print("Let's Chat! :Type 'quit to exit")
 
-# creating the loop to chat with Jarvis
-while True:
-    sentence = input('You: ')
-    if sentence == 'quit':
-        break
 
+# function that get message as a parameters and return response
+def get_response(msg):
     # calculate the bag of words
-    sentence = tokenize(sentence)
+    sentence = tokenize(msg)
     x = bag_of_words(sentence, all_words)
 
     # reshape
@@ -61,6 +57,9 @@ while True:
         # check the intents if they matches
         for intent in intents["intents"]:
             if tag == intent['tag']:
-                print(f'{bot_name}: {random.choice(intent["responses"])}')  # random choice from the responses array
-    else:
-        print(f'{bot_name}: I do not understand...')
+                return random.choice(intent['response'])  # random choice from the responses array
+
+    return "I do not understand..."
+
+
+
